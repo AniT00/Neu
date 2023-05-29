@@ -1,36 +1,61 @@
 #include "CsvReader.h"
 #include <sstream>
 
-bool CsvReader::getline(float* destination, size_t length)
+CsvReader::CsvReader(const char* fileName)
+	: m_file(fileName, std::ios_base::in)
 {
-	if (_file.eof()) {
+	std::string line;
+	std::getline(m_file, line);
+	std::stringstream lineStream(line);
+	std::string cell;
+
+	while(std::getline(lineStream, cell, ','))
+	{
+		m_values.push_back(std::string());
+	}
+	m_file.seekg(0);
+}
+
+CsvReader::CsvReader(const char* fileName, std::initializer_list<std::string> identifiers) 
+	: m_file(fileName, std::ios_base::in), m_values(identifiers.size()) {
+	m_identifiers = new std::map<std::string, std::string*>();
+	auto iv = m_values.begin();
+	for (auto id = identifiers.begin(); id != identifiers.end(); id++, iv++) {
+		m_identifiers->insert({ *id, &*iv });
+	}
+}
+
+bool CsvReader::next() {
+	if (m_file.eof()) {
 		return false;
 	}
-	
-	std::getline(_file, line);
-	lineStream.str(line);
-	lineStream.seekg(0);
 
-	for (int i = 0; i < length; i++)
+	std::string line;
+	std::getline(m_file, line);
+	std::stringstream lineStream(line);
+	std::string cell;
+
+	for (auto& v : m_values)
 	{
 		std::getline(lineStream, cell, ',');
-		destination[i] = std::stof(cell);
+		v = cell;
 	}
 
 	return true;
 }
 
-void CsvReader::skipline()
-{
-	std::getline(_file, line);
+std::string CsvReader::get(const std::string& id) {
+	return *m_identifiers->at(id);
 }
 
-void CsvReader::open(const char* fileName)
-{
-	_file.open(fileName);
+std::string CsvReader::get(size_t id) {
+	return m_values[id];
 }
 
-CsvReader::CsvReader(const char* fileName)
-	: _file(fileName, std::ios_base::in), lineStream(line)
-{
+void CsvReader::open(const char* fileName) {
+	m_file.open(fileName);
+}
+
+void CsvReader::close() {
+	m_file.close();
 }
