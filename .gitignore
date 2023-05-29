@@ -33,3 +33,4 @@
 /.vs
 /out/build/x64-debug
 /CMakePresets.json
+/test/main.cpp
