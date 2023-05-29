@@ -13,6 +13,10 @@ set(SRC
 	${SRCROOT}/NeuralNetwork.cpp
 	${INCROOT}/CsvReader.h
 	${SRCROOT}/CsvReader.cpp
+	${INCROOT}/Layer.h
+	${SRCROOT}/Layer.cpp
+	${INCROOT}/Activators.h
+	${SRCROOT}/Activators.cpp
 )
 source_group("" FILES ${SRC})
 
