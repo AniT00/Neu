@@ -57,6 +57,11 @@ void NeuralNetwork::predict(float* input)
 		_outputs[0][i] = input[i];
 	}
 
+	float* curr_layer = input;
+	for (int i = 0; i < m_layerNum; i++) {
+		curr_layer = m_layers[i]->calculate(curr_layer);
+	}
+
 	for (int i = 0; i < _layerNum - 1; i++)
 	{
 		for (int j = 0; j < _sizes[i + 1]; j++)
@@ -155,6 +160,10 @@ void NeuralNetwork::useOptimizedDerivative(bool value)
 
 NeuralNetwork::~NeuralNetwork()
 {
+	for (int i = 0; i < m_layerNum; i++) {
+		delete m_layers[i];
+	}
+	delete[] m_layers;
 	for (int i = 0; i < _layerNum - 1; i++)
 	{
 		for (int j = 0; j < _sizes[i]; j++)
