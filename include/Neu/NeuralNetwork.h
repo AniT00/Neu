@@ -1,95 +1,111 @@
 #pragma once
 #include "Layer.h"
+#include "Logger.h"
 
 #include <cmath>
 #include <initializer_list>
+#include <functional>
+#include <iostream>
 //#include "Matrix.h"
 
 class NeuralNetwork
 {
-
 public:
-	NeuralNetwork(std::initializer_list<size_t> layers) {
-		m_layerNum = layers.size() - 1;
-		m_layers = new Layer*[m_layerNum];
-		auto it = layers.begin();
-		for (int i = 0; i < m_layerNum; i++) {
-			m_layers[i] = new Layer(*(it++), *it);
-		}
-	}
+	using cost_func = float(*)(const float*, const float*, size_t, const float*);
 
-	NeuralNetwork(size_t* sizes, size_t layerNum);
+	enum Answer {
+		INDEX,
+		ARRAY
+	};
 
-	void predict(float* input);
+	NeuralNetwork(std::initializer_list<size_t> layers);
 
-	void train(float* input, float* output);
+	const float* predict(float* input);
 
-	float loss(float* output) const;
+	void train();
+
 
 	/// <summary>
 	/// return index of biggest output. Caches value
 	/// </summary>
 	/// <returns></returns>
-	unsigned int answer();
+	//unsigned int answer();
 
-	float* const output() const;
+	const float* getOutput() const;
 
-	void setLearningRate(float value);
+	NeuralNetwork& setLearningRate(float value);
 
-	void useOptimizedDerivative(bool value);
+	NeuralNetwork& setInputSample(float* sample, size_t size);
+
+	NeuralNetwork& setAnswerType(Answer type);
+
+	NeuralNetwork& setAnswers(float* answers);
+
+	NeuralNetwork& setBatchSize(size_t size);
+
+	NeuralNetwork& setTargetBatchLoss(float loss);
+
+	NeuralNetwork& setEpochs(size_t count);
+
+	NeuralNetwork& setLogger(std::ostream* stream);
+
+	NeuralNetwork& logOutput(bool log);
 
 	~NeuralNetwork();
 
 private:
-	typedef float((*Activator))(float);
+	void backpropagate(size_t batch_N);
 
-	inline static float sigmoid(float x)
-	{
-		return 1 / (1 + expf(-x));
-	}
+	float* calculateBatchError();
 
-	inline static float sigmoidDer(float x)
-	{
-		float s = 1 / (1 + expf(-x));
-		return s * (1 - s);
-	}
+	float* calculateBatchErrorDelta(const float* expected);
 
-	inline static float sigmoidDerOptimized(float sigm_x)
-	{
-		return sigm_x * (1 - sigm_x);
-	}
+	float total_loss(const float* expected, const float* actual) const;
 
-	inline static float tanhDer(float x)
-	{
-		return 1 / powf(coshf(x), 2);
-	}
+	float lossArrayAnswer(const float* expected, const float* actual) const;
 
-	inline static float tanhDerOptimized(float tanh_x)
-	{
-		return 1 - powf(tanh_x, 2);
-	}
+	float lossIndexAnswer(const float* expected, const float* actual) const;
+
+	void logOutput();
+
+	float* m_input;
+	size_t m_inputSize;
+
+	size_t m_outputSize;
+	const float* m_output;
 
 	Layer** m_layers;
 	size_t m_layerNum;
 
-	float** _outputs;
-	float** _sums;
-	float*** _weights;
-	float** _bias;
-	float** _deltas;
+	float* m_batch_error;
+	float* m_error_delta;
+	float* m_batch_error_delta;
+	float* m_batch_output;
+	float* m_expected_batch_output;
+	float m_target_loss;
 
-	Activator* _activator;
-	Activator* _activatorDer;
-	float** _activatorDerArg = nullptr;
+	cost_func m_cost_f;
+	cost_func m_cost_der_f;
+	
 
-	float _learningRate = 0.005f;
+	float m_learningRate = 0.005f;
+	float* m_sample = nullptr;
+	size_t m_sampleSize = 0;
+	size_t m_batchSize = 1;
+	size_t m_epochs = 1;
+
+	float* m_expected = nullptr;
+	Answer m_answerType = ARRAY;
 
 	size_t _layerNum;
 	size_t* _sizes;
+
+	Logger m_logger;
+	bool log = false;
+	bool m_logOutput = false;
 
 	/// <summary>
 	/// store index of biggest output of last predict()</see> after answer() call
 	/// </summary>
 	int _lastAnswer = 0;
-
 };

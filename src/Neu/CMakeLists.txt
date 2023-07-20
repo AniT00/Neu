@@ -17,6 +17,8 @@ set(SRC
 	${SRCROOT}/Layer.cpp
 	${INCROOT}/Activators.h
 	${SRCROOT}/Activators.cpp
+	${INCROOT}/Logger.h
+	${SRCROOT}/Logger.cpp
 )
 source_group("" FILES ${SRC})
 

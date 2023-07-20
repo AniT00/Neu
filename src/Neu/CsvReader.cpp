@@ -26,12 +26,11 @@ CsvReader::CsvReader(const char* fileName, std::initializer_list<std::string> id
 }
 
 bool CsvReader::next() {
-	if (m_file.eof()) {
+	std::string line;
+	if (!std::getline(m_file, line)) {
 		return false;
 	}
 
-	std::string line;
-	std::getline(m_file, line);
 	std::stringstream lineStream(line);
 	std::string cell;
 
