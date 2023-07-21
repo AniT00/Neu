@@ -31,12 +31,12 @@ namespace WeightInitilizer {
 namespace LossFunctions {
 	inline void mean_sqrd(const float* expected, const float* actual, size_t size, float* result) {
 		// TODO test
-		std::transform(expected, expected + size, actual, result,
-			[](float e, float a) { return powf(a - e, 2) / 2; });
+		std::transform(actual, actual + size, expected, result,
+			[](float a, float e) { return powf(a - e, 2) / 2; });
 	}
 
 	inline void mean_sqrd_der(const float* expected, const float* actual, size_t size, float* result) {
-		std::transform(expected, expected + size, actual, result,
-			std::plus<float>());
+		std::transform(actual, actual + size, expected, result,
+			std::minus<float>());
 	}
 }
