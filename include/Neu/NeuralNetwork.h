@@ -11,12 +11,7 @@
 class NeuralNetwork
 {
 public:
-	using cost_func = float(*)(const float*, const float*, size_t, const float*);
-
-	enum Answer {
-		INDEX,
-		ARRAY
-	};
+	using cost_func = void(*)(const float*, const float*, size_t, float*);
 
 	NeuralNetwork(std::initializer_list<size_t> layers);
 
@@ -36,8 +31,6 @@ public:
 	NeuralNetwork& setLearningRate(float value);
 
 	NeuralNetwork& setInputSample(float* sample, size_t size);
-
-	NeuralNetwork& setAnswerType(Answer type);
 
 	NeuralNetwork& setAnswers(float* answers);
 
@@ -59,12 +52,6 @@ private:
 	float* calculateBatchError();
 
 	float* calculateBatchErrorDelta(const float* expected);
-
-	float total_loss(const float* expected, const float* actual) const;
-
-	float lossArrayAnswer(const float* expected, const float* actual) const;
-
-	float lossIndexAnswer(const float* expected, const float* actual) const;
 
 	void logOutput();
 
@@ -95,7 +82,6 @@ private:
 	size_t m_epochs = 1;
 
 	float* m_expected = nullptr;
-	Answer m_answerType = ARRAY;
 
 	size_t _layerNum;
 	size_t* _sizes;

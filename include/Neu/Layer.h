@@ -35,7 +35,7 @@ public:
 	float* calculate() {
 		for (size_t i = 0; i < m_layerSize; i++)
 		{
-			m_weightedInput[i] = -m_bias[i];
+			m_weightedInput[i] = m_bias[i];
 
 			for (size_t j = 0; j < m_inputSize; j++)
 			{
@@ -49,12 +49,12 @@ public:
 
 	void backpropagate(const float* delta) {
 		for (size_t i = 0; i < m_layerSize; i++) {
-			float weightDelta = delta[i] * m_activatorDer(m_output[i]);
+			float weightDelta = delta[i] * m_activatorDer(m_weightedInput[i]);
 			for (size_t j = 0; j < m_inputSize; j++)
 			{
-				m_weights[i][j] += weightDelta * m_input[j] * *m_learningRate;
+				m_weights[i][j] -= weightDelta * m_input[j] * *m_learningRate;
 			}
-			m_bias[i] += weightDelta * *m_learningRate * -1;
+			m_bias[i] -= weightDelta * *m_learningRate;
 		}
 	}
 
@@ -65,7 +65,7 @@ public:
 			m_delta[i] = 0;
 			for (size_t j = 0; j < m_layerSize; j++)
 			{
-				m_delta[i] += delta[j] * m_weights[j][i] * m_activatorDer(m_output[j]);
+				m_delta[i] += delta[j] * m_weights[j][i] * m_activatorDer(m_weightedInput[i]);
 			}
 		}
 		return m_delta;
