@@ -1,31 +1,83 @@
 #pragma once
-#include <random>
 #include <fstream>
-#include <sstream>
 #include <map>
-
+#include <optional>
+#include <random>
+#include <sstream>
 
 class CsvReader
 {
 public:
-	CsvReader(const char* fileName);
+  class Line
+  {
+  public:
+    Line() = default;
 
-	CsvReader(const char* fileName, std::initializer_list<std::string> identifiers);
+    explicit Line(size_t size);
 
-	bool next();
+    explicit Line(const std::string& line, size_t size = 0);
 
-	std::string get(const std::string&);
+    Line(const Line& obj) = default;
 
-	std::string get(size_t id);
+    Line(Line&& obj);
 
-	void open(const char* fileName);
+    void setContent(const std::string& line);
 
-	void close();
+    const std::vector<std::string>& getValues();
+
+    size_t getColumnCount();
+
+    void setIdentifiers(std::initializer_list<std::string> identifiers);
+
+    void setIdentifiers(const Line& line);
+
+    const std::string& get(const std::string&);
+
+    const std::string& get(size_t id);
+
+    std::vector<std::string>::const_iterator begin() const;
+
+    std::vector<std::string>::const_iterator end() const;
+
+    Line& operator=(Line&& obj);
+
+  private:
+    std::map<std::string, const std::string*> m_identifiers;
+    std::vector<std::string> m_values;
+    size_t m_columnCount = 0;
+  };
+
+  CsvReader(const char* fileName);
+
+  CsvReader(const char* fileName,
+            std::initializer_list<std::string> identifiers);
+
+  void setIdentifiers(std::initializer_list<std::string> identifiers);
+
+  void setIdentifiers(const Line& line);
+
+  std::optional<Line> next();
+
+  void goToLine(size_t index);
+
+  void open(const char* fileName);
+
+  void close();
+
+  size_t getLineCount()
+  {
+    if (m_lineCount == -1) {
+      m_lineCount = std::count(std::istreambuf_iterator<char>(m_file),
+                               std::istreambuf_iterator<char>(),
+                               '\n');
+    }
+    return m_lineCount;
+  }
 
 private:
+  std::fstream m_file;
 
-	std::fstream m_file;
+  Line m_last_line;
 
-	std::map<std::string, std::string*>* m_identifiers = nullptr;
-	std::vector<std::string> m_values;
+  size_t m_lineCount = -1;
 };

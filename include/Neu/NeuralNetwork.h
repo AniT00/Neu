@@ -3,95 +3,94 @@
 #include "Logger.h"
 
 #include <cmath>
-#include <initializer_list>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
-//#include "Matrix.h"
 
 class NeuralNetwork
 {
 public:
-	using cost_func = void(*)(const float*, const float*, size_t, float*);
+  NeuralNetwork(std::initializer_list<size_t> layers);
 
-	NeuralNetwork(std::initializer_list<size_t> layers);
+  const float* predict(float* input);
 
-	const float* predict(float* input);
+  void train();
 
-	void train();
+  /// <summary>
+  /// return index of biggest output. Caches value
+  /// </summary>
+  /// <returns></returns>
+  // unsigned int answer();
 
+  const float* getOutput() const;
 
-	/// <summary>
-	/// return index of biggest output. Caches value
-	/// </summary>
-	/// <returns></returns>
-	//unsigned int answer();
+  NeuralNetwork& setLearningRate(float value);
 
-	const float* getOutput() const;
+  NeuralNetwork& setActivator(const Activator& activator);
 
-	NeuralNetwork& setLearningRate(float value);
+  NeuralNetwork& setLossFunction(const LossFunction& loss);
 
-	NeuralNetwork& setInputSample(float* sample, size_t size);
+  NeuralNetwork& setInputSample(float* sample, size_t size);
 
-	NeuralNetwork& setAnswers(float* answers);
+  NeuralNetwork& setAnswers(float* answers);
 
-	NeuralNetwork& setBatchSize(size_t size);
+  NeuralNetwork& setBatchSize(size_t size);
 
-	NeuralNetwork& setTargetBatchLoss(float loss);
+  NeuralNetwork& setTargetBatchLoss(float loss);
 
-	NeuralNetwork& setEpochs(size_t count);
+  NeuralNetwork& setEpochs(size_t count);
 
-	NeuralNetwork& setLogger(std::ostream* stream);
+  NeuralNetwork& setLogger(std::ostream* stream);
 
-	NeuralNetwork& logOutput(bool log);
+  NeuralNetwork& logOutput(bool log);
 
-	~NeuralNetwork();
+  ~NeuralNetwork();
 
 private:
-	void backpropagate(size_t batch_N);
+  void backpropagate(size_t batch_N);
 
-	float* calculateBatchError();
+  float* calculateBatchError();
 
-	float* calculateBatchErrorDelta(const float* expected);
+  float* calculateBatchErrorDelta(const float* expected);
 
-	void logOutput();
+  void logOutput();
 
-	float* m_input;
-	size_t m_inputSize;
+  float* m_input;
+  size_t m_inputSize;
 
-	size_t m_outputSize;
-	const float* m_output;
+  size_t m_outputSize;
+  const float* m_output;
 
-	Layer** m_layers;
-	size_t m_layerNum;
+  Layer** m_layers;
+  size_t m_layerNum;
 
-	float* m_batch_error;
-	float* m_error_delta;
-	float* m_batch_error_delta;
-	float* m_batch_output;
-	float* m_expected_batch_output;
-	float m_target_loss;
+  float* m_batch_error;
+  float* m_error_delta;
+  float* m_batch_error_delta;
+  float* m_batch_output;
+  float* m_expected_batch_output;
+  float m_target_loss;
 
-	cost_func m_cost_f;
-	cost_func m_cost_der_f;
-	
+	Activator m_activatorFunc;
+  LossFunction m_costFunc;
 
-	float m_learningRate = 0.005f;
-	float* m_sample = nullptr;
-	size_t m_sampleSize = 0;
-	size_t m_batchSize = 1;
-	size_t m_epochs = 1;
+  float m_learningRate = 0.005f;
+  float* m_sample = nullptr;
+  size_t m_sampleSize = 0;
+  size_t m_batchSize = 1;
+  size_t m_epochs = 1;
 
-	float* m_expected = nullptr;
+  float* m_expected = nullptr;
 
-	size_t _layerNum;
-	size_t* _sizes;
+  size_t _layerNum;
+  size_t* _sizes;
 
-	Logger m_logger;
-	bool log = false;
-	bool m_logOutput = false;
+  Logger m_logger;
+  bool log = false;
+  bool m_logOutput = false;
 
-	/// <summary>
-	/// store index of biggest output of last predict()</see> after answer() call
-	/// </summary>
-	int _lastAnswer = 0;
+  /// <summary>
+  /// store index of biggest output of last predict()</see> after answer() call
+  /// </summary>
+  int _lastAnswer = 0;
 };
