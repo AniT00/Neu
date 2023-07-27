@@ -8,28 +8,28 @@
 class CsvReader
 {
 public:
-  class Line
+  class Record
   {
   public:
-    Line() = default;
+    Record() = default;
 
-    explicit Line(size_t size);
+    explicit Record(size_t size);
 
-    explicit Line(const std::string& line, size_t size = 0);
+    explicit Record(const std::string& line, size_t size = 0);
 
-    Line(const Line& obj) = default;
+    Record(const Record& obj) = default;
 
-    Line(Line&& obj);
+    Record(Record&& obj);
 
     void setContent(const std::string& line);
 
     const std::vector<std::string>& getValues();
 
-    size_t getColumnCount();
+    size_t getColumnCount() const;
 
     void setIdentifiers(std::initializer_list<std::string> identifiers);
 
-    void setIdentifiers(const Line& line);
+    void setIdentifiers(const Record& line);
 
     const std::string& get(const std::string&);
 
@@ -39,12 +39,11 @@ public:
 
     std::vector<std::string>::const_iterator end() const;
 
-    Line& operator=(Line&& obj);
+    Record& operator=(Record&& obj);
 
   private:
     std::map<std::string, const std::string*> m_identifiers;
     std::vector<std::string> m_values;
-    size_t m_columnCount = 0;
   };
 
   CsvReader(const char* fileName);
@@ -54,9 +53,9 @@ public:
 
   void setIdentifiers(std::initializer_list<std::string> identifiers);
 
-  void setIdentifiers(const Line& line);
+  void setIdentifiers(const Record& line);
 
-  std::optional<Line> next();
+  std::optional<const std::reference_wrapper<Record>> next();
 
   void goToLine(size_t index);
 
@@ -66,18 +65,23 @@ public:
 
   size_t getLineCount()
   {
+    std::streampos g = m_file.tellg();
+    m_file.seekg(0);
     if (m_lineCount == -1) {
       m_lineCount = std::count(std::istreambuf_iterator<char>(m_file),
                                std::istreambuf_iterator<char>(),
                                '\n');
     }
+    m_file.seekg(g);
     return m_lineCount;
   }
 
 private:
-  std::fstream m_file;
+  std::optional<std::string> readLine();
 
-  Line m_last_line;
+  std::ifstream m_file;
+
+  Record m_last_line;
 
   size_t m_lineCount = -1;
 };

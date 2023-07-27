@@ -3,12 +3,8 @@
 #include <assert.h>
 
 CsvReader::CsvReader(const char* fileName)
-  : m_file(fileName, std::ios_base::in)
 {
-  if (!next()) {
-    throw std::runtime_error("Empty file");
-  }
-  m_file.seekg(0);
+  open(fileName);
 }
 
 CsvReader::CsvReader(const char* fileName,
@@ -26,21 +22,21 @@ CsvReader::setIdentifiers(std::initializer_list<std::string> identifiers)
 }
 
 void
-CsvReader::setIdentifiers(const Line& line)
+CsvReader::setIdentifiers(const Record& line)
 {
   m_last_line.setIdentifiers(line);
 }
 
-std::optional<CsvReader::Line>
+std::optional<const std::reference_wrapper<CsvReader::Record>>
 CsvReader::next()
 {
-  std::string buffer;
-  if (!std::getline(m_file, buffer)) {
+  std::optional<std::string> buffer = readLine();
+  if (!buffer) {
     return {};
   }
-  m_last_line.setContent(buffer);
+  m_last_line.setContent(buffer.value());
 
-  return Line(m_last_line);
+  return m_last_line;
 }
 
 void
@@ -48,7 +44,7 @@ CsvReader::goToLine(size_t index)
 {
   m_file.seekg(0);
   for (size_t i = 0; i < index; i++) {
-    next();
+    readLine();
   }
 }
 
@@ -56,6 +52,15 @@ void
 CsvReader::open(const char* fileName)
 {
   m_file.open(fileName);
+  if (m_file.fail()) {
+    throw std::runtime_error("No such file");
+  }
+  std::optional<std::string> line = readLine();
+  if (!line) {
+    throw std::runtime_error("Empty file");
+  }
+  m_last_line = Record(line.value());
+  m_file.seekg(0);
 }
 
 void
@@ -64,28 +69,43 @@ CsvReader::close()
   m_file.close();
 }
 
-CsvReader::Line::Line(size_t size)
+std::optional<std::string>
+CsvReader::readLine()
 {
-  m_values.reserve(size);
-  m_columnCount = size;
+  std::string buffer;
+  if (!std::getline(m_file, buffer)) {
+    return {};
+  }
+  return buffer;
 }
 
-CsvReader::Line::Line(const std::string& line, size_t size)
+CsvReader::Record::Record(size_t size)
+{
+  m_values.reserve(size);
+}
+
+CsvReader::Record::Record(const std::string& line, size_t size)
 {
   if (size != 0) {
     m_values.reserve(size);
-  }
-  this->setContent(line);
-  m_columnCount = m_values.size();
+		this->setContent(line);
+  } else {
+    std::stringstream lineStream(line);
+    std::string cell;
+
+    while (std::getline(lineStream, cell, ',')) {
+      m_values.push_back(cell);
+    }
+	}
 }
 
-CsvReader::Line::Line(Line&& obj)
+CsvReader::Record::Record(Record&& obj)
 {
   *this = std::move(obj);
 }
 
 void
-CsvReader::Line::setContent(const std::string& line)
+CsvReader::Record::setContent(const std::string& line)
 {
   std::stringstream lineStream(line);
   std::string cell;
@@ -97,19 +117,19 @@ CsvReader::Line::setContent(const std::string& line)
 }
 
 const std::vector<std::string>&
-CsvReader::Line::getValues()
+CsvReader::Record::getValues()
 {
   return m_values;
 }
 
 size_t
-CsvReader::Line::getColumnCount()
+CsvReader::Record::getColumnCount() const
 {
-  return m_columnCount;
+  return m_values.size();
 }
 
 void
-CsvReader::Line::setIdentifiers(std::initializer_list<std::string> identifiers)
+CsvReader::Record::setIdentifiers(std::initializer_list<std::string> identifiers)
 {
   auto it_v = m_values.data();
   for (const auto& e : identifiers) {
@@ -119,7 +139,7 @@ CsvReader::Line::setIdentifiers(std::initializer_list<std::string> identifiers)
 }
 
 void
-CsvReader::Line::setIdentifiers(const Line& line)
+CsvReader::Record::setIdentifiers(const Record& line)
 {
   m_identifiers.clear();
   auto iv = m_values.data();
@@ -129,34 +149,33 @@ CsvReader::Line::setIdentifiers(const Line& line)
 }
 
 const std::string&
-CsvReader::Line::get(const std::string& id)
+CsvReader::Record::get(const std::string& id)
 {
   return *m_identifiers.at(id);
 }
 
 const std::string&
-CsvReader::Line::get(size_t id)
+CsvReader::Record::get(size_t id)
 {
   return m_values[id];
 }
 
 std::vector<std::string>::const_iterator
-CsvReader::Line::begin() const
+CsvReader::Record::begin() const
 {
   return m_values.begin();
 }
 
 std::vector<std::string>::const_iterator
-CsvReader::Line::end() const
+CsvReader::Record::end() const
 {
   return m_values.end();
 }
 
-CsvReader::Line&
-CsvReader::Line::operator=(Line&& obj)
+CsvReader::Record&
+CsvReader::Record::operator=(Record&& obj)
 {
   m_identifiers.swap(obj.m_identifiers);
   m_values.swap(obj.m_values);
-  std::swap(m_columnCount, obj.m_columnCount);
   return *this;
 }
