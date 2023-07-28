@@ -1,18 +1,25 @@
 #include "Neu/Activators.h"
 
+const ParametricActivator<float> ParametricActivator<float>::LeakRelu(activators::relu,
+                                        activators::relu_der,
+                                        0.01f);
+const ParametricActivator<float> ParametricActivator<float>::Relu(activators::relu,
+                                    activators::relu_der,
+                                    0.f);
+
 const Activator Activator::Sigmoid(activators::sigmoid,
-                                          activators::sigmoidDer);
+                                   activators::sigmoid_der);
 
 Activator::Activator(activator_f activator, activator_f activatorDerivative)
 {
   m_activator = activator;
-  m_activatorDer = activatorDerivative;
+  m_activator_der = activatorDerivative;
 }
 
 void
 Activator::der(float* input, size_t size, float* result) const
 {
-  m_activatorDer(input, size, result);
+  m_activator_der(input, size, result);
 }
 
 void
@@ -21,13 +28,17 @@ Activator::operator()(float* input, size_t size, float* result) const
   m_activator(input, size, result);
 }
 
-LossFunction LossFunction::MeanSqrt(loss_functions::mean_sqrd, loss_functions::mean_sqrd_der);
-LossFunction LossFunction::CrossEntropy(loss_functions::cross_entropy, loss_functions::cross_enrtropy_der);
+LossFunction LossFunction::CrossEntropy(loss_functions::cross_entropy,
+                                        loss_functions::cross_enrtropy_der);
+LossFunction LossFunction::Softmax(loss_functions::softmax,
+                                   loss_functions::softmax_der);
+LossFunction LossFunction::MeanSqrt(loss_functions::mean_sqrd,
+                                    loss_functions::mean_sqrd_der);
 
 LossFunction::LossFunction(loss_f activator, loss_f activatorDerivative)
 {
   m_activator = activator;
-  m_activatorDer = activatorDerivative;
+  m_activator_der = activatorDerivative;
 }
 
 void
@@ -36,7 +47,7 @@ LossFunction::der(const float* expected,
                   size_t size,
                   float* result) const
 {
-  m_activatorDer(expected, actual, size, result);
+  m_activator_der(expected, actual, size, result);
 }
 
 void
