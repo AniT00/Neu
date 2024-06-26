@@ -31,6 +31,8 @@
 *.out
 *.app
 /.vs
-/out/build/x64-debug
+/out
 /CMakePresets.json
 /test/main.cpp
+/build/Desktop_Qt_6_7_0_MSVC2019_64bit-Debug
+/build

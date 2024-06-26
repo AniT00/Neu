@@ -18,7 +18,8 @@ set(SRC
 	
 	
 )
-source_group("" FILES ${SRC})
+#source_group("" FILES ${SRC})
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SRC})
 
 add_library(Neu STATIC ${SRC})
 

@@ -4,6 +4,7 @@
 #include <optional>
 #include <random>
 #include <sstream>
+#include <filesystem>
 
 class CsvReader
 {
@@ -96,10 +97,10 @@ public:
     difference_type m_index;
   };
 
-  CsvReader(const char* fileName);
+  CsvReader(const std::filesystem::path& fileName);
 
-  CsvReader(const char* fileName,
-            std::initializer_list<std::string> identifiers);
+  //CsvReader(const std::filesystem::path& fileName,
+  //          std::initializer_list<std::string> identifiers);
 
   void setIdentifiers(std::initializer_list<std::string> identifiers);
 
@@ -115,7 +116,7 @@ public:
 
   void goToRecord(size_t index);
 
-  void open(const char* fileName);
+  void open(const std::filesystem::path& fileName);
 
   void close();
 

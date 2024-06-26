@@ -24,7 +24,6 @@ constexpr std::initializer_list<size_t> configuration = { 2, 3, 3, 1 };
 
 int main()
 {
-	sf::Time;
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGTH), "window");
 
 	NeuralNetwork network(configuration);

@@ -13,9 +13,14 @@ using loss_f = void (*)(const float* expected,
 
 class Activator;
 
+template<typename... Ts>
+class ParametricActivator;
+
 class Activator
 {
 public:
+  Activator();
+
   Activator(activator_f activator, activator_f activatorDerivative);
 
   const activator_f& getFunc() { return m_activator; }
@@ -26,42 +31,14 @@ public:
 
   void operator()(float* input, size_t size, float* result) const;
 
+  static const ParametricActivator<float> Relu;
+  static const ParametricActivator<float> LeakRelu;
   static const Activator Sigmoid;
 
-private:
+protected:
   activator_f m_activator, m_activator_der;
 };
 
-template<typename... Ts>
-class ParametricActivator : public Activator
-{
-public:
-  using unwraped_act_f =
-    std::function<void(Ts..., const float*, size_t, float*)>;
-
-  ParametricActivator(unwraped_act_f activator,
-                      unwraped_act_f activator_der,
-                      Ts... params)
-    : m_activator(std::bind_front(activator, params))
-    , m_activator_der(std::bind_front(activator_der, params))
-    , m_unwraped_function(activator)
-    , m_unwraped_der_function(activator_der)
-  {
-  }
-
-  void setParams(Ts... params)
-  {
-    m_activator = Activator(std::bind_front(m_unwraped_function, params),
-                            std::bind_front(m_unwraped_der_function, params));
-  }
-
-  static const ParametricActivator<float> LeakRelu;
-  static const ParametricActivator<float> Relu;
-
-private:
-  unwraped_act_f m_unwraped_function;
-  unwraped_act_f m_unwraped_der_function;
-};
 namespace activators {
 inline void
 relu(float neg_mult, const float* input, size_t size, float* result)
@@ -103,6 +80,8 @@ normal_xavier_initilize(float** matrix, size_t rows, size_t columns, size_t n);
 class LossFunction
 {
 public:
+  LossFunction();
+
   LossFunction(loss_f activator, loss_f activatorDerivative);
 
   void der(const float* expected,
@@ -192,3 +171,30 @@ mean_sqrd_der(const float* expected,
 }
 
 }
+
+template<typename... Ts>
+class ParametricActivator : public Activator
+{
+public:
+  using unwraped_act_f =
+    std::function<void(Ts..., const float*, size_t, float*)>;
+
+  ParametricActivator(unwraped_act_f activator,
+                      unwraped_act_f activator_der,
+                      Ts... params)
+    : Activator(activators::sigmoid, activators::sigmoid_der)
+    , m_unwraped_function(activator)
+    , m_unwraped_der_function(activator_der)
+  {
+  }
+
+  void setParams(Ts... params)
+  {
+    m_activator = std::bind_front(m_unwraped_function, params);
+    m_activator_der = std::bind_front(m_unwraped_der_function, params);
+  }
+
+private:
+  unwraped_act_f m_unwraped_function;
+  unwraped_act_f m_unwraped_der_function;
+};

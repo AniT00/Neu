@@ -2,18 +2,18 @@
 
 #include <assert.h>
 
-CsvReader::CsvReader(const char* fileName)
+CsvReader::CsvReader(const std::filesystem::path& fileName)
 {
-  open(fileName);
+   open(fileName);
 }
 
-CsvReader::CsvReader(const char* fileName,
-                     std::initializer_list<std::string> identifiers)
-  : m_file(fileName, std::ios_base::in)
-  , m_last_record(identifiers.size())
-{
-  setIdentifiers(identifiers);
-}
+//CsvReader::CsvReader(const std::filesystem::path& fileName,
+//                     std::initializer_list<std::string> identifiers)
+//  : m_file(fileName, std::ios_base::in)
+//  , m_last_record(identifiers.size())
+//{
+//  setIdentifiers(identifiers);
+//}
 
 void
 CsvReader::setIdentifiers(std::initializer_list<std::string> identifiers)
@@ -83,7 +83,7 @@ CsvReader::goToRecord(size_t index)
 }
 
 void
-CsvReader::open(const char* fileName)
+CsvReader::open(const std::filesystem::path& fileName)
 {
   m_file.open(fileName);
   m_recordIndex = 0;

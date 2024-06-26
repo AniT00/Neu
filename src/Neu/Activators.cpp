@@ -1,19 +1,22 @@
 #include "Neu/Activators.h"
 
-const ParametricActivator<float> ParametricActivator<float>::LeakRelu(activators::relu,
-                                        activators::relu_der,
-                                        0.01f);
-const ParametricActivator<float> ParametricActivator<float>::Relu(activators::relu,
-                                    activators::relu_der,
-                                    0.f);
-
+const ParametricActivator<float> Activator::Relu(activators::relu,
+                                                 activators::relu_der,
+                                                 0.f);
+const ParametricActivator<float> Activator::LeakRelu(activators::relu,
+                                                     activators::relu_der,
+                                                     0.01f);
 const Activator Activator::Sigmoid(activators::sigmoid,
                                    activators::sigmoid_der);
 
-Activator::Activator(activator_f activator, activator_f activatorDerivative)
+Activator::Activator()
+  : m_activator(nullptr), m_activator_der(nullptr)
+{}
+
+  Activator::Activator(activator_f activator, activator_f activatorDerivative)
+  : m_activator(activator)
+  , m_activator_der(activatorDerivative)
 {
-  m_activator = activator;
-  m_activator_der = activatorDerivative;
 }
 
 void
@@ -35,10 +38,17 @@ LossFunction LossFunction::Softmax(loss_functions::softmax,
 LossFunction LossFunction::MeanSqrt(loss_functions::mean_sqrd,
                                     loss_functions::mean_sqrd_der);
 
-LossFunction::LossFunction(loss_f activator, loss_f activatorDerivative)
+LossFunction::LossFunction()
+  : m_activator(nullptr)
+  , m_activator_der(nullptr)
 {
-  m_activator = activator;
-  m_activator_der = activatorDerivative;
+
+}
+
+LossFunction::LossFunction(loss_f activator, loss_f activatorDerivative)
+  : m_activator(activator)
+  , m_activator_der(activatorDerivative)
+{
 }
 
 void

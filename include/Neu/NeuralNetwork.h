@@ -10,6 +10,22 @@
 class NeuralNetwork
 {
 public:
+  // Primal purpose is to define behavior of loss function.
+  enum class NetworkType
+  {
+    // Default network state.
+    DEFAULT,
+    // Use only if network has one output to classify into classes. Expected
+    // answer array is array of target class 0 or 1 for each sample.
+    BINARY_CLASSIFIER,
+    // Use to reduce answer array size. Network assumes the the answer array
+    // element with index i contain index of output neuron that should be
+    // activated for sample with index i.
+    CLASSIFIER
+  };
+
+  NeuralNetwork();
+
   NeuralNetwork(std::initializer_list<size_t> layers);
 
   const float* predict(float* input);
@@ -23,6 +39,8 @@ public:
   // unsigned int answer();
 
   const float* getOutput() const;
+
+  NeuralNetwork& setType(NetworkType type);
 
   NeuralNetwork& setLearningRate(float value);
 
@@ -38,11 +56,17 @@ public:
 
   NeuralNetwork& setTargetBatchLoss(float loss);
 
+  float getTargetBatchLoss() const;
+
+  float getLoss() const;
+
+  float getAccuracy() const;
+
   NeuralNetwork& setEpochs(size_t count);
 
   NeuralNetwork& setLogger(std::ostream* stream);
 
-  NeuralNetwork& logOutput(bool log);
+  NeuralNetwork& logPrediction(bool log);
 
   ~NeuralNetwork();
 
@@ -51,9 +75,15 @@ private:
 
   float* calculateBatchError();
 
-  float* calculateBatchErrorDelta(const float* expected);
+  float* calculateBatchErrorDelta();
 
-  void logOutput();
+  void addOutputToBatch(const float* output);
+
+  void addExpectedToBatch(const float* expected);
+
+  void logPrediction();
+
+  NetworkType m_networkType = NetworkType::DEFAULT;
 
   float* m_input;
   size_t m_inputSize;
@@ -70,9 +100,12 @@ private:
   float* m_batch_output;
   float* m_expected_batch_output;
   float m_target_loss;
+  float m_loss;
+  float m_correct = 0;
+  float m_accuracy = 0;
 
-	Activator m_activatorFunc;
-  LossFunction m_costFunc;
+  Activator m_activatorFunc;
+  LossFunction m_lossFunc;
 
   float m_learningRate = 0.005f;
   float* m_sample = nullptr;
@@ -80,6 +113,8 @@ private:
   size_t m_batchSize = 1;
   size_t m_epochs = 1;
 
+  float* m_target;
+  float* m_answers = nullptr;
   float* m_expected = nullptr;
 
   size_t _layerNum;

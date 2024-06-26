@@ -1,22 +1,25 @@
 #pragma once
 #include <ostream>
 
-class Logger {
+
+class Logger
+{
 public:
-	Logger();
+  Logger();
 
-	Logger(std::ostream* stream);
+  Logger(std::ostream* stream);
 
-	void log(const std::string& text);
+  void log(const std::string& text);
 
-	void logln(const std::string& text);
+  void logln(const std::string& text);
 
-	template<typename T>
-	Logger& operator<<(const T& obj) {
-		*m_stream << obj;
-		return *this;
-	}
+  template<typename T>
+  Logger& operator<<(const T& obj)
+  {
+    *m_stream << obj;
+    return *this;
+  }
 
 private:
-	std::ostream* m_stream;
+  std::ostream* m_stream;
 };

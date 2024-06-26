@@ -9,7 +9,19 @@
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "Qt6_DIR",
+          "value": "",
+          "type": "PATH"
+        },
+        {
+          "name": "CMAKE_PREFIX_PATH",
+          "value": "C:\\Qt\\6.7.0\\msvc2019_64",
+          "type": "PATH"
+        }
+      ]
     },
     {
       "name": "x64-Release",
